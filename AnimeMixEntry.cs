@@ -34,8 +34,8 @@ namespace StorybrewScripts
         [Configurable] public string FontJaPath = ""; // MPLUS1p-Regular.ttf
         [Configurable] public int FontJaSize = 50;
         [Configurable] public int FontGlowRadius = 8;
-        [Configurable] public float FontShadowOpacity = 100f / 3 ;
-        [Configurable] public float FontShadowDistance = 6;        
+        [Configurable] public float FontShadowOpacity = 100f / 3;
+        [Configurable] public float FontShadowDistance = 6;
 
         // NOTE: 452 does not support switch expression.
         private readonly Dictionary<string, Color4> SeasonColors = new Dictionary<string, Color4>
@@ -116,66 +116,65 @@ namespace StorybrewScripts
                     if (!File.Exists(Path.Combine(MapsetPath, backgroundPath)))
                     {
                         Log($"Background is missing for entry {info.Entry.Number}");
-                        GenerateBackground(Beatmap.BackgroundPath, startTime - animation, endTime + animation); 
+                        GenerateBackground(Beatmap.BackgroundPath, startTime - animation, endTime + animation);
                     }
-                    else GenerateBackground(backgroundPath, startTime - animation, endTime + animation); 
+                    else GenerateBackground(backgroundPath, startTime - animation, endTime + animation);
                 }
 
-                if (EnableEntry) Entry(info, ScreenToOsu(303, 540), startTime, endTime);
-                if (EnableEntryOverlay) EntryOverlay(info, ScreenToOsu(96, 214), startTime, endTime);
+                if (EnableEntry) Entry(info, ScreenToOsu(240, 540), startTime, endTime, PixelToOsu(1440, 1080));
+                if (EnableEntryOverlay) EntryOverlay(info, ScreenToOsu(120 + 16, 120 + 16), startTime, endTime);
                 if (EnableParts)
                 {
                     foreach (var part in info.Parts)
                     {
-                        Parts(Font, part.Name, ScreenToOsu(1800, 900), part.StartTime + Offset, part.EndTime + Offset);
+                        Parts(Font, part.Name, ScreenToOsu(1800 - 16, 960 - 16), part.StartTime + Offset, part.EndTime + Offset);
                     }
                 }
-                if (EnableLyrics) Lyrics(info.Lyrics);
+                if (EnableLyrics) Lyrics(info.Lyrics, ScreenToOsu(120 + 16, 960 - 16), PixelToOsu(960, 1080), ScreenToOsu(1800 - 16, 120 + 16), PixelToOsu(1920, 840 - 120));
             }
+            Log(OsuToScreen(1920, 40));   
         }
 
-        private void Entry(Info info, Vector2 position, int startTime, int endTime)
+        private void Entry(Info info, Vector2 position, int startTime, int endTime, Vector2 constraints)
         {
-            var constraints = ScreenToOsu(1920 * 3 / 4, 1080);
-
             // anime
 
             var time = startTime;
             var animation = Snap(Beatmap, time, 16, 1);
-            EntryAnimeCover(info, position - PixelToOsu(10, 0), time, time + animation -1);
+            EntryAnimeCover(info, position - PixelToOsu(10, 0), time, time + animation - 1);
             // time += animation;
 
             animation = Snap(Beatmap, time, 8, 1);
-            EntryAnimeTitles(info, position, time, time + animation -1);
+            EntryAnimeTitles(info, position, time, time + animation - 1, constraints);
             time += animation;
             animation = Snap(Beatmap, time, 4, 1);
-            EntryAnimeStudio(info, position, time, time + animation -1);
+            EntryAnimeStudio(info, position, time, time + animation - 1, constraints);
             time += animation;
             animation = Snap(Beatmap, time, 4, 1);
-            EntryAnimeOtherInfo(info, position, time, time + animation -1);
+            EntryAnimeOtherInfo(info, position, time, time + animation - 1, constraints);
             time += animation;
-            
+
             // song
 
             animation = Snap(Beatmap, time, 8, 1);
-            EntrySongIcon(position, time, time + animation -1);
+            EntrySongIcon(position, time, time + animation - 1);
             // time += animation;
 
             animation = Snap(Beatmap, time, 4, 1);
-            EntrySongTitles(info, position, time, time + animation -1);
+            EntrySongTitles(info, position, time, time + animation - 1, constraints);
             time += animation;
             animation = Snap(Beatmap, time, 4, 1);
-            EntrySongArtists(info, position, time, time + animation -1);
+            EntrySongArtists(info, position, time, time + animation - 1, constraints);
             time += animation;
-            
+
             // mappers
 
             animation = Snap(Beatmap, time, 8, 1);
-            EntryMappersIcon(position, time, time + animation -1);
+            EntryMappersIcon(position, time, time + animation - 1);
             // time += animation;
 
             animation = Snap(Beatmap, time, 8, 1);
-            EntryMappers(info, position, time, time + animation -1);
+            EntryMappers(info, position, time, time + animation - 1, constraints);
             time += animation;
         }
 
@@ -257,11 +256,9 @@ namespace StorybrewScripts
             disk.Rotate(OsbEasing.InOutBack, startTime + (endTime - startTime) / 2, endTime, MathHelper.DegreesToRadians(97.5), MathHelper.DegreesToRadians(102.5));
         }
 
-        private void EntryAnimeTitles(Info info, Vector2 position, int startTime, int endTime)
+        private void EntryAnimeTitles(Info info, Vector2 position, int startTime, int endTime, Vector2 constraints)
         {
             var effect = new TextUpDownEffect(Beatmap);
-
-            var constraints = ScreenToOsu(1920 * 3 / 4, 1080);
 
             var texts = new List<TextItem>
             {
@@ -273,12 +270,10 @@ namespace StorybrewScripts
             GenerateTextBox(this, texts, position, startTime, endTime, constraints, effect);
         }
 
-        private void EntryAnimeStudio(Info info, Vector2 position, int startTime, int endTime)
+        private void EntryAnimeStudio(Info info, Vector2 position, int startTime, int endTime, Vector2 constraints)
         {
             var effect = new TextUpDownEffect(Beatmap);
             var studios = string.Join(" · ", info.Anime.Studios.Select(s => s.Name));
-
-            var constraints = ScreenToOsu(1920 * 3 / 4, 1080);
 
             var texts = new List<TextItem>
             {
@@ -287,13 +282,11 @@ namespace StorybrewScripts
             GenerateTextBox(this, texts, position, startTime, endTime, constraints, effect);
         }
 
-        private void EntryAnimeOtherInfo(Info info, Vector2 position, int startTime, int endTime)
+        private void EntryAnimeOtherInfo(Info info, Vector2 position, int startTime, int endTime, Vector2 constraints)
         {
             var effect = new TextUpDownEffect(Beatmap);
             var generes = string.Join(" · ", info.Anime.Genres.Select(g => g.Name));
             var episodes = $"{info.Anime.NumEpisodes} Episodes";
-
-            var constraints = ScreenToOsu(1920 * 3 / 4, 1080);
 
             var texts = new List<TextItem>
             {
@@ -303,11 +296,9 @@ namespace StorybrewScripts
             GenerateTextBox(this, texts, position, startTime, endTime, constraints, effect);
         }
 
-        private void EntrySongTitles(Info info, Vector2 position, int startTime, int endTime)
+        private void EntrySongTitles(Info info, Vector2 position, int startTime, int endTime, Vector2 constraints)
         {
             var effect = new TextUpDownEffect(Beatmap);
-
-            var constraints = ScreenToOsu(1920 * 3 / 4, 1080);
 
             var texts = new List<TextItem>
             {
@@ -319,11 +310,9 @@ namespace StorybrewScripts
             GenerateTextBox(this, texts, position, startTime, endTime, constraints, effect);
         }
 
-        private void EntrySongArtists(Info info, Vector2 position, int startTime, int endTime)
+        private void EntrySongArtists(Info info, Vector2 position, int startTime, int endTime, Vector2 constraints)
         {
             var effect = new TextUpDownEffect(Beatmap);
-
-            var constraints = ScreenToOsu(1920 * 3 / 4, 1080);
 
             var texts = new List<TextItem>
             {
@@ -335,13 +324,11 @@ namespace StorybrewScripts
             GenerateTextBox(this, texts, position, startTime, endTime, constraints, effect);
         }
 
-        private void EntryMappers(Info info, Vector2 position, int startTime, int endTime)
+        private void EntryMappers(Info info, Vector2 position, int startTime, int endTime, Vector2 constraints)
         {
             var effect = new TextUpDownEffect(Beatmap);
 
             var mappers = string.Join(" · ", info.Entry.Mappers);
-
-            var constraints = ScreenToOsu(1920 * 3 / 4, 1080);
 
             var texts = new List<TextItem>
             {
@@ -385,33 +372,28 @@ namespace StorybrewScripts
 
             var effect = new TextUpDownEffect(Beatmap);
 
-            var textHeight = Text.Generate(this, Font, name, position - PixelToOsu(barWidth, 0), startTime, endTime, FontSize3, effect, OsbOrigin.TopRight).Height;
+            var textHeight = Text.Generate(this, Font, name, position - PixelToOsu(barWidth, 0), startTime, endTime, FontSize3, effect, OsbOrigin.BottomRight).Height;
             var barSize = new Vector2(PixelToOsu(barWidth), textHeight);
 
+            position.Y -= textHeight;   
             VerticalProgressBar(position + PixelToOsu(5, 5), startTime, endTime, barSize, Color4.Black, 1f / 3);
             VerticalProgressBar(position, startTime, endTime, barSize, Color4.White);
         }
 
-        private void Lyrics(List<Ly> lyrics)
+        private void Lyrics(List<Ly> lyrics, Vector2 position, Vector2 constraints, Vector2 positionJa, Vector2 constraintsJa)
         {
             if (lyrics == null) return; // NOTE: Hotfix 452
-            
+
             const bool ResnapLyrics = true;
             const int SnapNumerator = 1;
             const int SnapDenominator = 1;
-
-            var lyricPosition = ScreenToOsu(100, 900);
-            var lyricJaPosition = ScreenToOsu(1800, 215);
-
-            var lyricContraints = ScreenToOsu(1920 * 3 / 4, 1080);
-            var lyricJaContraints = ScreenToOsu(1920, 1081 / 2);
 
             var effectJa = new TextUpDownEffect(Beatmap) { MovementMultiply = 1f / 8 };
             var effect = new TextUpDownEffect(Beatmap);
 
             // resnap lyrics and calculate ends
             var lyricSnaped = lyrics;
-            if(ResnapLyrics)
+            if (ResnapLyrics)
             {
                 for (int i = 0; i < lyricSnaped.Count; i++)
                 {
@@ -428,8 +410,8 @@ namespace StorybrewScripts
 
                 // bottom lyrics romanji / english
 
-                var size = Text.ScaleFill(Font, lyric.Text[0], lyricContraints, FontSize3);
-                Text.Generate(this, Font, lyric.Text[0], lyricPosition, startTime, endTime, size, effect);
+                var size = Text.ScaleFill(Font, lyric.Text[0], constraints, FontSize3);
+                Text.Generate(this, Font, lyric.Text[0], position, startTime, endTime, size, effect, OsbOrigin.BottomLeft);
 
                 // Right lyrics Ja
 
@@ -438,7 +420,7 @@ namespace StorybrewScripts
                 var lyricsJaUnformated = lyric.Text[1];
                 var texts = new List<TextItem>();
                 var regex = new Regex(@"(?<ja>[^{]+)|{(?<en>[^}]+)}");
-                
+
                 // match {en} or {ja} lyrics for apropriate fomat
                 foreach (Match match in regex.Matches(lyricsJaUnformated))
                 {
@@ -454,13 +436,13 @@ namespace StorybrewScripts
                     }
                 }
 
-                GenerateVerticalTextBox(this, texts, lyricJaPosition, startTime, endTime, lyricJaContraints, effectJa, OsbOrigin.TopCentre);
+                GenerateVerticalTextBox(this, texts, positionJa, startTime, endTime, constraintsJa, effectJa, OsbOrigin.TopCentre);
             }
         }
 
         private void GenerateBackground(string backgroundPath, int startTime, int endTime)
         {
-            #pragma warning disable CS0162 // Unreachable code detected
+            #pragma warning disable CS0162
 
             const bool FadeIn = true;
             const bool FadeOut = true;
@@ -505,7 +487,7 @@ namespace StorybrewScripts
 
                     // Generate a random angle avoiding too high values, maintaining the movement within ellipse
                     double randomAngle = Random(0, 2 * Math.PI);
-                    
+
                     // Calculate the maximum distance for this random angle along the ellipse
                     double maxDistance = Math.Sqrt(Math.Pow(b, 2) / (1 - eccentricity * eccentricity * Math.Pow(Math.Cos(randomAngle), 2)));
                     double distance = Random(0, Math.Min(10, maxDistance)); // Constrain to a max movement distance (10 in this example)
@@ -524,7 +506,7 @@ namespace StorybrewScripts
             if (Vignete)
             {
                 const float vigneteOpacity = 1f;
-                
+
                 var vignetePath = Path.Combine("sb", "Vignete.png");
                 if (!File.Exists(Path.Combine(MapsetPath, vignetePath))) throw new Exception($"{vignetePath} is missing");
 
@@ -534,7 +516,7 @@ namespace StorybrewScripts
                 vignete.Fade(endTime, endTime - 1, vigneteOpacity, 0);
             }
 
-            #pragma warning restore CS0162 // Unreachable code detected
+            #pragma warning restore CS0162
         }
 
         // other functions
@@ -554,9 +536,9 @@ namespace StorybrewScripts
             bar.Color(startTime, color);
 
             // intro
-            bar.Fade(startTime, opacity);
+            bar.Fade(startTime, startTime + animation, 0, opacity);
             bar.ScaleVec(OsbEasing.OutBack, startTime, startTime + animation, flat, size);
-            bar.Move(OsbEasing.OutBack, startTime, startTime + animation, positionOffset, positionOffset + height / 2);
+            bar.Move(OsbEasing.OutBack, startTime, startTime + animation, positionOffset - new Vector2(0, size.Y / 2), positionOffset + height / 2);
 
             // outro
             bar.Fade(endTime, 0);
@@ -570,12 +552,12 @@ namespace StorybrewScripts
             if (!File.Exists(Path.Combine(MapsetPath, pixelPath))) throw new Exception($"{pixelPath} is missing");
 
             var blackBackground = GetLayer("").CreateSprite(pixelPath);
-            
+
             float scale = 480f / GetMapsetBitmap(pixelPath).Size.Height;
             blackBackground.ScaleVec(startTime, scale * (16f / 9f), scale);
             blackBackground.Color(startTime, Color4.Black);
             blackBackground.Fade(startTime, 1);
             blackBackground.Fade(endTime, endTime - 1, 1, 0);
-        }      
+        }
     }
 }
