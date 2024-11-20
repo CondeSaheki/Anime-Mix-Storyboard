@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Library</OutputType>
+        <TargetFramework>net5.0</TargetFramework>
+        <RootNamespace>storyboard</RootNamespace>
+        <AssemblyName>storyboard</AssemblyName>
+        <Nullable>disable</Nullable>
+        <Optimize>true</Optimize>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Reference Include="System.Drawing.Common">
+            <HintPath>../../System.Drawing.Common.dll</HintPath>
+        </Reference>
+        <Reference Include="OpenTK">
+            <HintPath>../../OpenTK.dll</HintPath>
+        </Reference>
+        <Reference Include="StorybrewCommon">
+            <HintPath>../../StorybrewCommon.dll</HintPath>
+        </Reference>
+        <Reference Include="Newtonsoft.Json">
+            <HintPath>../../Newtonsoft.Json.dll</HintPath>
+        </Reference>
+    </ItemGroup>
+</Project>

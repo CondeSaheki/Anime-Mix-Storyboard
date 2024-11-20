@@ -1,0 +1,8 @@
+.sbrew
+.cache
+.vscode
+assetlibrary/AnimeMixInfo
+assetlibrary/Fonts
+assetlibrary/Credits.json
+bin
+obj
