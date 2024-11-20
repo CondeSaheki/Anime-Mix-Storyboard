@@ -1,0 +1,46 @@
+[
+    {
+        "Group": "Organizers",
+        "GroupSize": 100,
+        "Members": [
+            ""
+        ],
+        "MemberSize": 75
+    },
+    {
+        "Group": "Background",
+        "GroupSize": 75,
+        "Members": [
+            ""
+        ],
+        "MemberSize": 50
+    },
+    {
+        "Group": "Audio, Video, Lyrics and StoryBoard",
+        "GroupSize": 75,
+        "Members": [
+            ""
+        ],
+        "MemberSize": 50
+    },
+    {
+        "Group": "Mappers",
+        "GroupSize": 75,
+        "Members": [
+            ""
+        ],
+        "MemberSize": 50
+    },
+    {
+        "Group": "Beatmap Nominators",
+        "GroupSize": 100,
+        "Members": ["Please rank this ❤"],
+        "MemberSize": 75
+    },
+    {
+        "Group": "Thank you to all participants for making this possible and to you for playing!",
+        "GroupSize": 100,
+        "Members": [""],
+        "MemberSize": 0
+    }
+]
