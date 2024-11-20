@@ -28,34 +28,20 @@ namespace Saheki
         /// </summary>
         /// <param name="font">The font to use when measuring the text.</param>
         /// <param name="text">The text to measure.</param>
-        /// <param name="constraints">The constraints to fit the text within.</param>
-        /// <param name="orientation">The orientation of the text, either horizontal or vertical.</param>
-        /// <returns>The scale required to fit the text within the given constraints.</returns>
-        public static uint ScaleFill(FontGenerator font, string text, Vector2 constraints, Orientation orientation = Orientation.Horizontal)
-        {
-            var size = Size(font, text, 100, orientation);
-
-            var scaleWidth = constraints.X / size.X;
-            var scaleHeight = constraints.Y / size.Y;
-
-            var scale = Math.Min(scaleWidth, scaleHeight);
-
-            return (uint)Math.Min(scale * 100, 100);
-        }
-
-        /// <summary>
-        /// Calculates the text scale required to fill the given constraints.
-        /// </summary>
-        /// <param name="font">The font to use when measuring the text.</param>
-        /// <param name="text">The text to measure.</param>
         /// <param name="maxScale">The maximum scale of the text.</param>
         /// <param name="constraints">The constraints to fit the text within.</param>
         /// <param name="orientation">The orientation of the text, either horizontal or vertical.</param>
         /// <returns>The scale required to fit the text within the given constraints, but limited to the given maximum size.</returns>
-        public static uint ScaleFill(FontGenerator font, string text, uint maxScale, Vector2 constraints, Orientation orientation = Orientation.Horizontal)
+        public static uint ScaleFill(FontGenerator font, string text, Vector2 constraints, uint maxScale = 100,  Orientation orientation = Orientation.Horizontal)
         {
-            return Math.Min(maxScale, ScaleFill(font, text, constraints, orientation));
+            var size = Size(font, text, maxScale, orientation);
 
+            var scaleWidth = constraints.X / size.X;
+            var scaleHeight = constraints.Y / size.Y;
+
+            var scale = Math.Min(scaleWidth, scaleHeight) * 100;
+
+            return (uint)Math.Min(scale, maxScale);
         }
     }
 }

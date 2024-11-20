@@ -1,26 +1,101 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
-    <PropertyGroup>
-        <OutputType>Library</OutputType>
-        <TargetFramework>net5.0</TargetFramework>
-        <RootNamespace>storyboard</RootNamespace>
-        <AssemblyName>storyboard</AssemblyName>
-        <Nullable>disable</Nullable>
-        <Optimize>true</Optimize>
-    </PropertyGroup>
-
-    <ItemGroup>
-        <Reference Include="System.Drawing.Common">
-            <HintPath>../../System.Drawing.Common.dll</HintPath>
-        </Reference>
-        <Reference Include="OpenTK">
-            <HintPath>../../OpenTK.dll</HintPath>
-        </Reference>
-        <Reference Include="StorybrewCommon">
-            <HintPath>../../StorybrewCommon.dll</HintPath>
-        </Reference>
-        <Reference Include="Newtonsoft.Json">
-            <HintPath>../../Newtonsoft.Json.dll</HintPath>
-        </Reference>
-    </ItemGroup>
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Output</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{8FED70CF-82ED-4096-AAC0-09FF8BF1C1A0}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>\</AppDesignerFolder>
+    <RootNamespace>storyboard</RootNamespace>
+    <AssemblyName>storyboard</AssemblyName>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Output|AnyCPU' ">
+    <PlatformTarget>x86</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>\</OutputPath>
+    <IntermediateOutputPath>..\..\cache\obj</IntermediateOutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject />
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="OpenTK">
+      <HintPath>..\..\OpenTK.dll</HintPath>
+    </Reference>
+    <Reference Include="StorybrewCommon">
+      <HintPath>..\..\StorybrewCommon.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+  <ItemGroup>
+    <Compile Include="AnimeMixEntry.cs" />
+    <Compile Include="Credits.cs" />
+    <Compile Include="Flashes.cs" />
+    <Compile Include="Intro.cs" />
+    <Compile Include="obj/Debug/.NETFramework,Version=v4.5.2.AssemblyAttributes.cs" />
+    <Compile Include="obj/Debug/net5.0/.NETCoreApp,Version=v5.0.AssemblyAttributes.cs" />
+    <Compile Include="obj/Debug/net5.0/scripts.AssemblyInfo.cs" />
+    <Compile Include="obj/Debug/net8.0/.NETCoreApp,Version=v8.0.AssemblyAttributes.cs" />
+    <Compile Include="obj/Debug/net8.0/scripts.AssemblyInfo.cs" />
+    <Compile Include="obj/Debug/net8.0-windows/.NETCoreApp,Version=v8.0.AssemblyAttributes.cs" />
+    <Compile Include="obj/Debug/net8.0-windows/scripts.AssemblyInfo.cs" />
+    <Compile Include="scriptslibrary/GenerateTextsBox.cs" />
+    <Compile Include="scriptslibrary/AnimeMixInfo/AnimeInfo.cs" />
+    <Compile Include="scriptslibrary/AnimeMixInfo/Credit.cs" />
+    <Compile Include="scriptslibrary/AnimeMixInfo/EntrysInfo.cs" />
+    <Compile Include="scriptslibrary/AnimeMixInfo/Info.cs" />
+    <Compile Include="scriptslibrary/AnimeMixInfo/PartsInfo.cs" />
+    <Compile Include="scriptslibrary/AnimeMixInfo/SongInfo.cs" />
+    <Compile Include="scriptslibrary/Saheki/FontShadowClone.cs" />
+    <Compile Include="scriptslibrary/Saheki/Ly.cs" />
+    <Compile Include="scriptslibrary/Saheki/Helpers/Coordinate.cs" />
+    <Compile Include="scriptslibrary/Saheki/Helpers/GetBpm.cs" />
+    <Compile Include="scriptslibrary/Saheki/Helpers/GetFontPath.cs" />
+    <Compile Include="scriptslibrary/Saheki/Helpers/JoinSpecial.cs" />
+    <Compile Include="scriptslibrary/Saheki/Helpers/Kiai.cs" />
+    <Compile Include="scriptslibrary/Saheki/Helpers/LegalizeString.cs" />
+    <Compile Include="scriptslibrary/Saheki/Helpers/Snap.cs" />
+    <Compile Include="scriptslibrary/Saheki/Text/Generate.cs" />
+    <Compile Include="scriptslibrary/Saheki/Text/IEffect.cs" />
+    <Compile Include="scriptslibrary/Saheki/Text/Orientation.cs" />
+    <Compile Include="scriptslibrary/Saheki/Text/PositionOffset.cs" />
+    <Compile Include="scriptslibrary/Saheki/Text/Scale.cs" />
+    <Compile Include="scriptslibrary/Saheki/Text/Size.cs" />
+    <Compile Include="scriptslibrary/Saheki/TextEffects/TextAngleEffect.cs" />
+    <Compile Include="scriptslibrary/Saheki/TextEffects/TextColorEffect.cs" />
+    <Compile Include="scriptslibrary/Saheki/TextEffects/TextDefaultEffect.cs" />
+    <Compile Include="scriptslibrary/Saheki/TextEffects/TextDelay.cs" />
+    <Compile Include="scriptslibrary/Saheki/TextEffects/TextDelayAngleEffect.cs" />
+    <Compile Include="scriptslibrary/Saheki/TextEffects/TextFade.cs" />
+    <Compile Include="scriptslibrary/Saheki/TextEffects/TextUpDownEffect.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>Newtonsoft.Json.dll</HintPath>
+    </Reference>
+  </ItemGroup>
 </Project>

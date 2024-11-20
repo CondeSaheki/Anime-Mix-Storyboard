@@ -59,12 +59,12 @@ namespace Saheki
 
                 foreach (var textItem in texts)
                 {
-                    uint size = Text.ScaleFill(textItem.Font, textItem.Text, (uint)(textItem.IntendedSize * multiplier), constraints);
-                    scaledSizes.Add(size);
+                    uint scale = ScaleFill(textItem.Font, textItem.Text, constraints, (uint)(textItem.IntendedSize * multiplier));
+                    scaledSizes.Add(scale);
 
-                    if (size != (uint)(textItem.IntendedSize * multiplier))
+                    if (scale != (uint)(textItem.IntendedSize * multiplier))
                     {
-                        multiplier *= (float)size / textItem.IntendedSize;
+                        multiplier *= (float)scale / textItem.IntendedSize;
                         allFit = false;
                         break;
                     }

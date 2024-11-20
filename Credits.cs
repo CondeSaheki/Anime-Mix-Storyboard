@@ -64,15 +64,17 @@ namespace StorybrewScripts
                     {
                         height -= Text.Size(Font, line, credit.MemberSize).Y;
                     }
-                    var cursor = position - new Vector2(0, height) / 2;
+                    var cursor = position + new Vector2(0, height) / 2;
                     
                     // Group
-                    Text.Generate(this, Font, credit.Group, cursor, currentTime, currentTime + timeStep - 1, credit.GroupSize, OsbOrigin.BottomCentre);
+                    var scale = Text.ScaleFill(Font, credit.Group, ScreenToOsu(1920 * 3 / 4, 1080 * 3 / 4), credit.GroupSize);
+                    Text.Generate(this, Font, credit.Group, cursor, currentTime, currentTime + timeStep - 1, scale, OsbOrigin.BottomCentre);
                     
                     // Members
                     foreach (var line in lines)
                     {
-                        cursor.Y += Text.Generate(this, Font, line, cursor, currentTime, currentTime + timeStep - 1, credit.GroupSize, OsbOrigin.TopCentre).Height;
+                        scale = Text.ScaleFill(Font, line, ScreenToOsu(1920 * 3 / 4, 1080 * 3 / 4), credit.MemberSize);
+                        cursor.Y += Text.Generate(this, Font, line, cursor, currentTime, currentTime + timeStep - 1, scale, OsbOrigin.TopCentre).Height;
                     }
 
                     currentTime += timeStep;

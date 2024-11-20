@@ -1,4 +1,4 @@
-<!-- Storybrew 1.9.1 resets script.csroj frequently to an old format that breaking intelisense, use this file content to fix the issue -->
+<!-- Storybrew 1.9.1 resets script.csroj frequently to an old format that breaks intelisense, use this file content to fix the issue -->
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
