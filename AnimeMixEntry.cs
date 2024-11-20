@@ -61,86 +61,76 @@ namespace StorybrewScripts
 
         public override void Generate()
         {
-            try
+            // read all entrys infos
+            var infos = Info.FromMultipleFolders(Path.Combine(AssetPath, "AnimeMixInfo"));
+
+            // load fonts
+            #pragma warning disable CA1416
+            Font = LoadFont(Path.Combine("sb", "Font"), new FontDescription()
             {
-                // read all entrys infos
-                var infos = Info.FromMultipleFolders(Path.Combine(AssetPath, "AnimeMixInfo"));
+                FontPath = GetFontPath(AssetPath, FontPath),
+                FontSize = FontSize,
+                FontStyle = FontStyle.Bold,
+                Color = Color.White,
+            },
+            new FontShadowClone()
+            {
+                Distance = new Vector2(FontShadowDistance, FontShadowDistance),
+                Color = new Color4(0, 0, 0, 255 * FontShadowOpacity / 100)
+            },
+            new FontGlow()
+            {
+                Color = new Color4(0, 0, 0, 255 * FontShadowOpacity / 100),
+                Radius = FontGlowRadius,
+            });
 
-                // load fonts
-                #pragma warning disable CA1416
-                Font = LoadFont(Path.Combine("sb", "Font"), new FontDescription()
-                {
-                    FontPath = GetFontPath(AssetPath, FontPath),
-                    FontSize = FontSize,
-                    FontStyle = FontStyle.Bold,
-                    Color = Color.White,
-                },
-                new FontShadowClone()
-                {
-                    Distance = new Vector2(FontShadowDistance, FontShadowDistance),
-                    Color = new Color4(0, 0, 0, 255 * FontShadowOpacity / 100)
-                },
-                new FontGlow()
-                {
-                    Color = new Color4(0, 0, 0, 255),
-                    Radius = FontGlowRadius,
-                });
+            FontJa = LoadFont(Path.Combine("sb", "FontJa"), new FontDescription()
+            {
+                FontPath = GetFontPath(AssetPath, FontJaPath),
+                FontSize = FontJaSize,
+                FontStyle = FontStyle.Bold,
+                Color = Color.White,
+            },
+            new FontShadowClone()
+            {
+                Distance = new Vector2(FontShadowDistance, FontShadowDistance),
+                Color = new Color4(0, 0, 0, 255 * FontShadowOpacity / 100)
+            },
+            new FontGlow()
+            {
+                Color = new Color4(0, 0, 0, 255),
+                Radius = FontGlowRadius,
+            });
+            #pragma warning restore CA1416
 
-                FontJa = LoadFont(Path.Combine("sb", "FontJa"), new FontDescription()
-                {
-                    FontPath = GetFontPath(AssetPath, FontJaPath),
-                    FontSize = FontJaSize,
-                    FontStyle = FontStyle.Bold,
-                    Color = Color.White,
-                },
-                new FontShadowClone()
-                {
-                    Distance = new Vector2(FontShadowDistance, FontShadowDistance),
-                    Color = new Color4(0, 0, 0, 255 * FontShadowOpacity / 100)
-                },
-                new FontGlow()
-                {
-                    Color = new Color4(0, 0, 0, 255),
-                    Radius = FontGlowRadius,
-                });
-                #pragma warning restore CA1416
+            // generate all entries effects
+            foreach (var info in infos)
+            {
+                var startTime = info.Entry.StartTime + Offset;
+                var endTime = info.Entry.EndTime + Offset;
 
-                // generate all entries effects
-
-                if (EnableBackground) BlackBackground(0, (int)AudioDuration);
-
-                foreach (var info in infos)
+                if (EnableBackground)
                 {
-                    var startTime = info.Entry.StartTime + Offset;
-                    var endTime = info.Entry.EndTime + Offset;
-
-                    if (EnableBackground)
+                    const int animation = 500;
+                    var backgroundPath = Path.Combine("sb", LegalizeString(info.Anime.Title), "Background.jpg");
+                    if (!File.Exists(Path.Combine(MapsetPath, backgroundPath)))
                     {
-                        const int animation = 500;
-                        var backgroundPath = Path.Combine("sb", LegalizeString(info.Anime.Title), "Background.jpg");
-                        if (!File.Exists(Path.Combine(MapsetPath, backgroundPath)))
-                        {
-                            Log($"Background is missing for entry {info.Entry.Number}");
-                            GenerateBackground(backgroundPath, startTime - animation, endTime + animation);
-                        }
-                        else GenerateBackground(Beatmap.BackgroundPath, startTime - animation, endTime + animation); 
+                        Log($"Background is missing for entry {info.Entry.Number}");
+                        GenerateBackground(Beatmap.BackgroundPath, startTime - animation, endTime + animation); 
                     }
-
-                    if (EnableEntry) Entry(info, ScreenToOsu(303, 540), startTime, endTime);
-                    if (EnableEntryOverlay) EntryOverlay(info, ScreenToOsu(96, 214), startTime, endTime);
-                    if (EnableParts)
-                    {
-                        foreach (var part in info.Parts)
-                        {
-                            Parts(Font, part.Name, ScreenToOsu(1800, 900), part.StartTime + Offset, part.EndTime + Offset);
-                        }
-                    }
-                    if (EnableLyrics) Lyrics(info.Lyrics);
+                    else GenerateBackground(backgroundPath, startTime - animation, endTime + animation); 
                 }
-            }
-            catch (Exception ex)
-            {
-                Log($"Error: {ex.Message}");
+
+                if (EnableEntry) Entry(info, ScreenToOsu(303, 540), startTime, endTime);
+                if (EnableEntryOverlay) EntryOverlay(info, ScreenToOsu(96, 214), startTime, endTime);
+                if (EnableParts)
+                {
+                    foreach (var part in info.Parts)
+                    {
+                        Parts(Font, part.Name, ScreenToOsu(1800, 900), part.StartTime + Offset, part.EndTime + Offset);
+                    }
+                }
+                if (EnableLyrics) Lyrics(info.Lyrics);
             }
         }
 
@@ -437,7 +427,7 @@ namespace StorybrewScripts
 
                 // bottom lyrics romanji / english
 
-                var size = Text.ScaleFill(Font, lyric.Text[0], FontSize3, lyricContraints);
+                var size = Text.ScaleFill(Font, lyric.Text[0], lyricContraints, FontSize3);
                 Text.Generate(this, Font, lyric.Text[0], lyricPosition, startTime, endTime, size, effect);
 
                 // Right lyrics Ja
