@@ -397,16 +397,17 @@ namespace StorybrewScripts
             if (lyrics == null) return; // NOTE: Hotfix 452
             
             const bool ResnapLyrics = true;
-            const int SnapNumerator = 2;
+            const int SnapNumerator = 1;
             const int SnapDenominator = 1;
 
             var lyricPosition = ScreenToOsu(100, 900);
             var lyricJaPosition = ScreenToOsu(1800, 215);
 
             var lyricContraints = ScreenToOsu(1920 * 3 / 4, 1080);
-            var lyricJaContraints = ScreenToOsu(1920, 1080 / 2);
+            var lyricJaContraints = ScreenToOsu(1920, 1081 / 2);
 
-            var effect = new TextDefaultEffect(); // new TextUpDownEffect(Beatmap);
+            var effectJa = new TextUpDownEffect(Beatmap) { MovementMultiply = 1f / 8 };
+            var effect = new TextUpDownEffect(Beatmap);
 
             // resnap lyrics and calculate ends
             var lyricSnaped = lyrics;
@@ -453,7 +454,7 @@ namespace StorybrewScripts
                     }
                 }
 
-                GenerateVerticalTextBox(this, texts, lyricJaPosition, startTime, endTime, lyricJaContraints, effect, OsbOrigin.TopCentre);
+                GenerateVerticalTextBox(this, texts, lyricJaPosition, startTime, endTime, lyricJaContraints, effectJa, OsbOrigin.TopCentre);
             }
         }
 
@@ -554,8 +555,8 @@ namespace StorybrewScripts
 
             // intro
             bar.Fade(startTime, opacity);
-            bar.ScaleVec(OsbEasing.Out, startTime, startTime + animation, flat, size);
-            bar.Move(OsbEasing.Out, startTime, startTime + animation, positionOffset, positionOffset + height / 2);
+            bar.ScaleVec(OsbEasing.OutBack, startTime, startTime + animation, flat, size);
+            bar.Move(OsbEasing.OutBack, startTime, startTime + animation, positionOffset, positionOffset + height / 2);
 
             // outro
             bar.Fade(endTime, 0);
