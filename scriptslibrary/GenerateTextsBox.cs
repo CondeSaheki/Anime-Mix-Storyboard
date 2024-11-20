@@ -109,13 +109,12 @@ namespace Saheki
             Vector2 totalSize = Vector2.Zero;
             foreach (var textItem in texts)
             {
-                var dimensions = Text.Size(textItem.Font, textItem.Text, textItem.IntendedSize);
-                totalSize.Y += dimensions.Y;
+                var dimensions = Size(textItem.Font, textItem.Text, textItem.IntendedSize, Orientation.Vertical);
                 totalSize.X = Math.Max(dimensions.X, totalSize.X);
+                totalSize.Y += dimensions.Y;
             }
+            var multiplier = Math.Min(Math.Min(constraints.X / totalSize.X, constraints.Y / totalSize.Y), 1);    
             
-            var multiplier = Math.Min(Math.Min(constraints.Y / totalSize.Y, constraints.X / totalSize.X), 1);
-
             var cursor = position;
             for (int i = 0; i < texts.Count; i++)
             {
