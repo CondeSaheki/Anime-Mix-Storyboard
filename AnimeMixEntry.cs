@@ -123,16 +123,9 @@ namespace StorybrewScripts
 
                 if (EnableEntry) Entry(info, ScreenToOsu(240, 540), startTime, endTime, PixelToOsu(1440, 1080));
                 if (EnableEntryOverlay) EntryOverlay(info, ScreenToOsu(120 + 16, 120 + 16), startTime, endTime);
-                if (EnableParts)
-                {
-                    foreach (var part in info.Parts)
-                    {
-                        Parts(Font, part.Name, ScreenToOsu(1800 - 16, 960 - 16), part.StartTime + Offset, part.EndTime + Offset);
-                    }
-                }
+                if (EnableParts) Parts(info, ScreenToOsu(1800 - 16, 960 - 16));
                 if (EnableLyrics) Lyrics(info.Lyrics, ScreenToOsu(120 + 16, 960 - 16), PixelToOsu(960, 1080), ScreenToOsu(1800 - 16, 120 + 16), PixelToOsu(1920, 840 - 120));
             }
-            Log(OsuToScreen(1920, 40));   
         }
 
         private void Entry(Info info, Vector2 position, int startTime, int endTime, Vector2 constraints)
@@ -362,21 +355,49 @@ namespace StorybrewScripts
 
             var barSize = new Vector2(PixelToOsu(barWidth), cursor.Y - position.Y);
 
-            VerticalProgressBar(position + PixelToOsu(5, 5), startTime, endTime, barSize, Color4.Black, 1f / 3);
+            VerticalProgressBar(position + PixelToOsu(5, 5), startTime, endTime, barSize, Color4.Black, 1f / 2);
             VerticalProgressBar(position, startTime, endTime, barSize, Color4.White);
         }
+        
+        private void Parts(Info info, Vector2 position)
+        {
+            if (info.Parts.Count == 0)
+            {
+                Log(info.Entry.Number + " has no parts");
+                return;
+            }
 
-        private void Parts(FontGenerator Font, string name, Vector2 position, int startTime, int endTime)
+            info.Parts.Sort((a, b) => a.StartTime.CompareTo(b.StartTime));
+            for (int i = 0; i < info.Parts.Count - 1; i++)
+            {
+                var part = info.Parts[i];
+                var nextPart = info.Parts[i + 1];
+
+                if (!part.EndTime.HasValue || part.EndTime == nextPart.StartTime)
+                {
+                    Mapper(Font, part.Name, position, part.StartTime + Offset, nextPart.StartTime - 1 + Offset);
+                    continue;
+                }
+
+                Mapper(Font, part.Name, position, part.StartTime + Offset, (int)part.EndTime + Offset);
+            }
+
+            var lastPart = info.Parts.Last();
+
+            Mapper(Font, lastPart.Name, position, lastPart.StartTime + Offset, lastPart.EndTime.HasValue ? lastPart.EndTime.Value + Offset : info.Entry.EndTime + Offset);
+        }
+
+        private void Mapper(FontGenerator Font, string name, Vector2 position, int startTime, int endTime)
         {
             const int barWidth = 8;
 
             var effect = new TextUpDownEffect(Beatmap);
 
-            var textHeight = Text.Generate(this, Font, name, position - PixelToOsu(barWidth, 0), startTime, endTime, FontSize3, effect, OsbOrigin.BottomRight).Height;
+            var textHeight = Text.Generate(this, Font, name, position - PixelToOsu(barWidth, 0), startTime, endTime, FontSize3, OsbOrigin.BottomRight).Height;
             var barSize = new Vector2(PixelToOsu(barWidth), textHeight);
 
-            position.Y -= textHeight;   
-            VerticalProgressBar(position + PixelToOsu(5, 5), startTime, endTime, barSize, Color4.Black, 1f / 3);
+            position.Y -= textHeight;
+            VerticalProgressBar(position + PixelToOsu(5, 5), startTime, endTime, barSize, Color4.Black, 1f / 2);
             VerticalProgressBar(position, startTime, endTime, barSize, Color4.White);
         }
 

@@ -38,6 +38,6 @@ namespace AnimeMixInfo
     {
         public string Name { get; set; } = string.Empty;
         public int StartTime { get; set; } = 0;
-        public int EndTime { get; set; } = 0;
+        public Nullable<int> EndTime { get; set; } = 0;
     }
 }
