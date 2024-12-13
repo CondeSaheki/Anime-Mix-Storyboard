@@ -39,6 +39,7 @@ namespace AnimeMixInfo
         public string Style { get; set; } = string.Empty;
         public int Popularity { get; set; } = 0;
         public List<string> Mappers { get; set; } = new List<string>();
+        public int Offset { get; set; } = 0;
         public int EntryTime { get; set; } = 0;
         public int StartTime { get; set; } = 0;
         public int EndTime { get; set; } = 0;

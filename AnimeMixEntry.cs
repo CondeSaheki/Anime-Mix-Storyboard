@@ -103,6 +103,24 @@ namespace StorybrewScripts
             });
             #pragma warning restore CA1416
 
+            // Apply offset
+            foreach (var info in infos)
+            {
+                if(info.Entry.Offset == 0) continue;
+
+                foreach (var part in info.Parts)
+                {
+                    part.StartTime += info.Entry.Offset;
+                    if (part.EndTime.HasValue) part.EndTime += info.Entry.Offset;
+                }
+                foreach (var lyric in info.Lyrics)
+                {
+                    lyric.StartTime += info.Entry.Offset;
+                    if (lyric.EndTime.HasValue) lyric.EndTime += info.Entry.Offset;
+                }
+                info.Entry.EntryTime += info.Entry.Offset;
+            }
+
             // generate all entries effects
             foreach (var info in infos)
             {
