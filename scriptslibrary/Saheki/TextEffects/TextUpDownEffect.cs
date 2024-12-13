@@ -16,8 +16,17 @@ namespace Saheki
         public void Draw(OsbSprite sprite, Vector2 position, int startTime, int endTime, float scale, int index,
             int count, float heigth, float width, char character, string text)
         {
-            var delay = Helpers.Snap(Beatmap, startTime, 1, 1);
-            if (endTime - delay < startTime + delay) throw new Exception($"TextUpDownEffect, text {text}, startTime {startTime}: Duration is too short to apply this effect");
+            var animationSnap = 1;
+            var delay = Helpers.Snap(Beatmap, startTime, 1, animationSnap);
+
+            while(endTime - delay < startTime + delay)
+            {
+                if (animationSnap == 16) throw new Exception($"TextUpDownEffect, text {text}, startTime {startTime}: Duration is too short to apply this effect");
+                animationSnap += animationSnap;
+                delay = Helpers.Snap(Beatmap, startTime, 1, animationSnap);
+            }
+
+            // if (endTime - delay < startTime + delay) throw new Exception($"TextUpDownEffect, text {text}, startTime {startTime}: Duration is too short to apply this effect");
             
             sprite.Scale(startTime, scale);
             sprite.Move(OsbEasing.OutBack, startTime, startTime + delay, position - new Vector2(0, heigth * MovementMultiply) / 2, position);
