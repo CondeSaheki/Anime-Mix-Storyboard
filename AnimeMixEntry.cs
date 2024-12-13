@@ -121,14 +121,14 @@ namespace StorybrewScripts
                     else GenerateBackground(backgroundPath, startTime - animation, endTime + animation);
                 }
 
-                if (EnableEntry) Entry(info, ScreenToOsu(240, 540), startTime, endTime, PixelToOsu(1440, 1080));
+                if (EnableEntry) Entry(info, ScreenToOsu(240, 540), info.Entry.EntryTime + Offset, PixelToOsu(1440, 1080));
                 if (EnableEntryOverlay) EntryOverlay(info, ScreenToOsu(120 + 16, 120 + 16), startTime, endTime);
                 if (EnableParts) Parts(info, ScreenToOsu(1800 - 16, 960 - 16));
                 if (EnableLyrics) Lyrics(info.Lyrics, ScreenToOsu(120 + 16, 960 - 16), PixelToOsu(960, 1080), ScreenToOsu(1800 - 16, 120 + 16), PixelToOsu(1920, 840 - 120));
             }
         }
 
-        private void Entry(Info info, Vector2 position, int startTime, int endTime, Vector2 constraints)
+        private void Entry(Info info, Vector2 position, int startTime, Vector2 constraints)
         {
             // anime
 
@@ -177,7 +177,7 @@ namespace StorybrewScripts
 
             var animation = Snap(Beatmap, startTime, 1, 1);
 
-            var animeCoverPath = Path.Combine("sb", LegalizeString(info.Anime.Title), "large_image.png");
+            var animeCoverPath = Path.Combine("sb", LegalizeString(info.Anime.Title), "large_image.jpg");
             var pixelPath = Path.Combine("sb", "Pixel.png");
             if (!File.Exists(Path.Combine(MapsetPath, animeCoverPath))) throw new Exception($"{animeCoverPath} is missing");
             if (!File.Exists(Path.Combine(MapsetPath, pixelPath))) throw new Exception($"{pixelPath} is missing");
@@ -379,12 +379,28 @@ namespace StorybrewScripts
                     continue;
                 }
 
-                Mapper(Font, part.Name, position, part.StartTime + Offset, (int)part.EndTime + Offset);
+                Mapper(Font, part.Name, position, part.StartTime + Offset, part.EndTime.Value + Offset);
             }
 
             var lastPart = info.Parts.Last();
+            
+            if (lastPart.EndTime.HasValue)
+            {
+                Mapper(Font, lastPart.Name, position, lastPart.StartTime + Offset, lastPart.EndTime.Value + Offset);
+            }
+            else
+            {
+                var entryObjects = Beatmap.HitObjects.Where(h => h.StartTime >= info.Entry.StartTime && h.StartTime < info.Entry.EndTime).OrderBy(h => h.StartTime);
+                if (!entryObjects.Any())
+                {
+                    Mapper(Font, lastPart.Name, position, lastPart.StartTime + Offset, info.Entry.EndTime + Offset);
+                    Log("Parts for Entry " + info.Entry.Number + " do no have end time, using entry end time");
+                    return;        
+                }
 
-            Mapper(Font, lastPart.Name, position, lastPart.StartTime + Offset, lastPart.EndTime.HasValue ? lastPart.EndTime.Value + Offset : info.Entry.EndTime + Offset);
+                Mapper(Font, lastPart.Name, position, lastPart.StartTime + Offset, (int)entryObjects.Last().EndTime);
+                Log("Parts for Entry " + info.Entry.Number + " do no have end time, using last object");
+            }
         }
 
         private void Mapper(FontGenerator Font, string name, Vector2 position, int startTime, int endTime)
@@ -393,7 +409,7 @@ namespace StorybrewScripts
 
             var effect = new TextUpDownEffect(Beatmap);
 
-            var textHeight = Text.Generate(this, Font, name, position - PixelToOsu(barWidth, 0), startTime, endTime, FontSize3, OsbOrigin.BottomRight).Height;
+            var textHeight = Text.Generate(this, Font, name, position - PixelToOsu(barWidth, 0), startTime, endTime, FontSize3, effect, OsbOrigin.BottomRight).Height;
             var barSize = new Vector2(PixelToOsu(barWidth), textHeight);
 
             position.Y -= textHeight;
@@ -415,7 +431,7 @@ namespace StorybrewScripts
             // resnap lyrics and calculate ends
             var lyricSnaped = lyrics;
             if (ResnapLyrics)
-            {
+            { 
                 for (int i = 0; i < lyricSnaped.Count; i++)
                 {
                     var lyric = lyricSnaped[i];
@@ -548,7 +564,8 @@ namespace StorybrewScripts
             if (!File.Exists(Path.Combine(MapsetPath, pixelPath))) throw new Exception($"{pixelPath} is missing");
 
             var animation = Snap(Beatmap, startTime, 1, 1);
-            if (endTime - startTime <= animation) animation = Snap(Beatmap, startTime, 1, 4);
+            if (endTime - (startTime + animation) <= animation) animation = Snap(Beatmap, startTime, 1, 4);
+            if (endTime - (startTime + animation) <= animation) throw new Exception($"VerticalProgressBar, startTime {startTime}, endTime {endTime}: Interval is too small");
 
             var flat = new Vector2(size.X, 0);
             var positionOffset = position + new Vector2(size.X, 0) / 2;
