@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using StorybrewCommon.Mapset;
 
@@ -18,11 +19,31 @@ namespace Saheki
         /// <exception cref="Exception">Thrown if no redlines exist in the specified range.</exception>
         public static string GetBpm(Beatmap beatmap, int startTime, int endTime, int negativeOffset = 1000)
         {
-            // Filter redlines that fall within the specified time range
+            // Filter redlines and objects that fall within the specified time range
             var relevantRedlines = beatmap.TimingPoints.Where(tp => tp.Offset >= startTime - negativeOffset && tp.Offset <= endTime).ToList();
+            var relevantObjects = beatmap.HitObjects.Where(o => o.StartTime >= startTime && o.EndTime <= endTime).ToList();
+
+            // Filter redlines ranges with objects
+            if (relevantObjects.Count != 0)
+            {
+                    relevantRedlines = relevantRedlines
+                        .Where(tp =>
+                        {
+                            // Calculate the end of the current redline's range
+                            var rangeEnd = relevantRedlines
+                                .Where(nextTp => nextTp.Offset > tp.Offset)
+                                .Select(nextTp => nextTp.Offset)
+                                .DefaultIfEmpty(endTime) // Use endTime if no next timing point
+                                .Min();
+
+                            // Check if any object overlaps with the redline range
+                            return relevantObjects.Any(o => o.StartTime < rangeEnd && o.EndTime > tp.Offset);
+                        })
+                        .ToList();
+            }
 
             if (relevantRedlines.Count == 0) throw new Exception("GetBpm, No redlines in range");
-            if (relevantRedlines.Count == 1) return $"{relevantRedlines[0].Bpm}";
+            if (relevantRedlines.Count == 1) return $"{Math.Round(relevantRedlines[0].Bpm, 2)}";
 
             double minBPM = relevantRedlines.Min(tp => tp.Bpm);
             double maxBPM = relevantRedlines.Max(tp => tp.Bpm);
@@ -48,7 +69,9 @@ namespace Saheki
                 dominantBpm = relevantRedlines.Last().Bpm;
             }
 
-            return $"{minBPM}-{maxBPM}({dominantBpm})";
+            if(Math.Round(minBPM, 2) == Math.Round(maxBPM, 2) && Math.Round(dominantBpm, 2) == Math.Round(minBPM, 2)) return $"{Math.Round(minBPM, 2)}*";
+
+            return $"{Math.Round(minBPM, 2)}-{Math.Round(maxBPM, 2)}({Math.Round(dominantBpm, 2)})";
         }
     }
 }
