@@ -530,7 +530,7 @@ namespace StorybrewScripts
             const int SnapNumerator = 3;
             const int SnapDenominator = 2;
 
-            var effectJa = new TextUpDownEffect(Beatmap) { MovementMultiply = 1f / 8 };
+            var effectJa = new TextUpDownEffect2(Beatmap) { MovementMultiply = 1f / 8 };
             var effect = new TextUpDownEffect(Beatmap);
 
             // resnap lyrics and calculate ends
