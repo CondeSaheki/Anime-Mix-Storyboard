@@ -603,8 +603,8 @@ namespace StorybrewScripts
 
             // outro
             bar.Fade(endTime, 0);
-            bar.ScaleVec(OsbEasing.In, startTime + animation, endTime, size, flat);
-            bar.Move(OsbEasing.In, startTime + animation, endTime, positionOffset + height / 2, positionOffset + height);
+            bar.ScaleVec(startTime + animation, endTime, size, flat);
+            bar.Move(startTime + animation, endTime, positionOffset + height / 2, positionOffset + height);
         }
 
         private void BlackBackground(int startTime, int endTime)
