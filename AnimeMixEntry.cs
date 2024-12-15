@@ -300,14 +300,17 @@ namespace StorybrewScripts
         {
             var effect = new TextUpDownEffect(Beatmap);
             var generes = string.Join(" · ", info.Anime.Genres.Select(g => g.Name));
-            var episodes = $"{info.Anime.NumEpisodes} Episodes";
+            // var episodes = $"{info.Anime.NumEpisodes} Episodes";
             var score = $"{info.Anime.Mean} MyAnimeList";
+            var season = info.Anime.StartSeason.Season.First().ToString().ToUpper() + info.Anime.StartSeason.Season.Substring(1);
+            if (info.Anime.StartSeason.Year != 2024) Log($"{info.Anime.Title} Season: {season} Year: {info.Anime.StartSeason.Year}");
 
             var texts = new List<TextItem>();
             
             if(info.Anime.Mean != 0) texts.Add(new TextItem(score, Font, FontSize3));
+            texts.Add(new TextItem(season, Font, FontSize2));
             texts.Add(new TextItem(generes, Font, FontSize3));
-            if(info.Anime.NumEpisodes != 0) texts.Add(new TextItem(episodes, Font, FontSize3));
+            // if(info.Anime.NumEpisodes != 0) texts.Add(new TextItem(episodes, Font, FontSize4));
             
             GenerateTextBox(this, texts, position, startTime, endTime, constraints, effect);
         }
@@ -445,8 +448,8 @@ namespace StorybrewScripts
             if (lyrics == null) return; // NOTE: Hotfix 452
 
             const bool ResnapLyrics = true;
-            const int SnapNumerator = 1;
-            const int SnapDenominator = 1;
+            const int SnapNumerator = 3;
+            const int SnapDenominator = 2;
 
             var effectJa = new TextUpDownEffect(Beatmap) { MovementMultiply = 1f / 8 };
             var effect = new TextUpDownEffect(Beatmap);
