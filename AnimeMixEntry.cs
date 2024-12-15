@@ -40,17 +40,17 @@ namespace StorybrewScripts
         // NOTE: 452 does not support switch expression.
         private readonly Dictionary<string, Color4> SeasonColors = new Dictionary<string, Color4>
         {
-            { "winter1", new Color4(0, 92, 255, 255) },
-            { "winter2", new Color4(35, 222, 255, 255) },
-            { "spring1", new Color4(3, 216, 2, 255) },
-            { "spring2", new Color4(235, 255, 0, 255) },
-            { "summer1", new Color4(254, 0, 0, 255) },
-            { "summer2", new Color4(255, 206, 13, 255) },
-            { "fall1", new Color4(255, 117, 23, 255) },
-            { "fall2", new Color4(242, 201, 158, 255) },
+            { "summer1", new Color4(254, 0, 0, 255) },      //Combo2
+            { "summer2", new Color4(255, 206, 13, 255) },   //Combo3
+            { "winter1", new Color4(0, 92, 255, 255) },     //Combo4
+            { "winter2", new Color4(35, 222, 255, 255) },   //Combo5
+            { "spring1", new Color4(3, 216, 2, 255) },      //Combo6
+            { "spring2", new Color4(235, 255, 0, 255) },    //Combo7
+            { "fall1", new Color4(255, 117, 23, 255) },     //Combo8
+            { "fall2", new Color4(242, 201, 158, 255) },    //Combo1
         };
         private Color4 GetGetSeasonColor(Info info, int color) => SeasonColors[$"{info.Anime.StartSeason.Season}{color}"];
-
+        
         private const int FontSize1 = 100;
         private const int FontSize2 = 75;
         private const int FontSize3 = 50;
@@ -107,18 +107,21 @@ namespace StorybrewScripts
             foreach (var info in infos)
             {
                 if(info.Entry.Offset == 0) continue;
+                
+                info.Entry.EntryTime += info.Entry.Offset;
 
                 foreach (var part in info.Parts)
                 {
                     part.StartTime += info.Entry.Offset;
                     if (part.EndTime.HasValue) part.EndTime += info.Entry.Offset;
                 }
+                
+                if(info.Lyrics == null || info.Lyrics.Count == 0) continue;
                 foreach (var lyric in info.Lyrics)
                 {
                     lyric.StartTime += info.Entry.Offset;
                     if (lyric.EndTime.HasValue) lyric.EndTime += info.Entry.Offset;
                 }
-                info.Entry.EntryTime += info.Entry.Offset;
             }
 
             // generate all entries effects
@@ -298,12 +301,14 @@ namespace StorybrewScripts
             var effect = new TextUpDownEffect(Beatmap);
             var generes = string.Join(" · ", info.Anime.Genres.Select(g => g.Name));
             var episodes = $"{info.Anime.NumEpisodes} Episodes";
+            var score = $"{info.Anime.Mean} MyAnimeList";
 
-            var texts = new List<TextItem>
-            {
-                new TextItem(generes, Font, FontSize3),
-                new TextItem(episodes, Font, FontSize3)
-            };
+            var texts = new List<TextItem>();
+            
+            if(info.Anime.Mean != 0) texts.Add(new TextItem(score, Font, FontSize3));
+            texts.Add(new TextItem(generes, Font, FontSize3));
+            if(info.Anime.NumEpisodes != 0) texts.Add(new TextItem(episodes, Font, FontSize3));
+            
             GenerateTextBox(this, texts, position, startTime, endTime, constraints, effect);
         }
 
@@ -358,7 +363,7 @@ namespace StorybrewScripts
             string bpm;
             try
             {
-                bpm = GetBpm(Beatmap, startTime, endTime) + " BPM";
+                bpm = GetBpm(Beatmap, startTime, endTime, 2000) + " BPM";
             }
             catch
             {
@@ -417,7 +422,7 @@ namespace StorybrewScripts
                 }
 
                 Mapper(Font, lastPart.Name, position, lastPart.StartTime + Offset, (int)entryObjects.Last().EndTime);
-                Log("Parts for Entry " + info.Entry.Number + " do no have end time, using last object");
+                // Log("Parts for Entry " + info.Entry.Number + " do no have end time, using last object");
             }
         }
 
