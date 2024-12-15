@@ -50,7 +50,7 @@ namespace StorybrewScripts
             { "fall2", new Color4(242, 201, 158, 255) },    //Combo1
         };
         private Color4 GetGetSeasonColor(Info info, int color) => SeasonColors[$"{info.Anime.StartSeason.Season}{color}"];
-        
+
         private const int FontSize1 = 100;
         private const int FontSize2 = 75;
         private const int FontSize3 = 50;
@@ -65,7 +65,7 @@ namespace StorybrewScripts
             var infos = Info.FromMultipleFolders(Path.Combine(AssetPath, "AnimeMixInfo"));
 
             // load fonts
-            #pragma warning disable CA1416
+#pragma warning disable CA1416
             Font = LoadFont(Path.Combine("sb", "Font"), new FontDescription()
             {
                 FontPath = GetFontPath(AssetPath, FontPath),
@@ -101,13 +101,13 @@ namespace StorybrewScripts
                 Color = new Color4(0, 0, 0, 255),
                 Radius = FontGlowRadius,
             });
-            #pragma warning restore CA1416
+#pragma warning restore CA1416
 
             // Apply offset
             foreach (var info in infos)
             {
-                if(info.Entry.Offset == 0) continue;
-                
+                if (info.Entry.Offset == 0) continue;
+
                 info.Entry.EntryTime += info.Entry.Offset;
 
                 foreach (var part in info.Parts)
@@ -115,8 +115,8 @@ namespace StorybrewScripts
                     part.StartTime += info.Entry.Offset;
                     if (part.EndTime.HasValue) part.EndTime += info.Entry.Offset;
                 }
-                
-                if(info.Lyrics == null || info.Lyrics.Count == 0) continue;
+
+                if (info.Lyrics == null || info.Lyrics.Count == 0) continue;
                 foreach (var lyric in info.Lyrics)
                 {
                     lyric.StartTime += info.Entry.Offset;
@@ -151,124 +151,203 @@ namespace StorybrewScripts
 
         private void Entry(Info info, Vector2 position, int startTime, Vector2 constraints)
         {
-            // anime
+
+            var textConstraints = constraints;
+            textConstraints.X -= 60;
 
             var time = startTime;
             var animation = Snap(Beatmap, time, 16, 1);
-            EntryAnimeCover(info, position - PixelToOsu(10, 0), time, time + animation - 1);
-            // time += animation;
+            var cursor = position;
+
+            // anime
+
+            cursor.X += 30;
+            EntryAnimeCover(info, cursor, time, time + animation - 1);
+            cursor.X += 30;
+            cursor += PixelToOsu(16, 0);
 
             animation = Snap(Beatmap, time, 8, 1);
-            EntryAnimeTitles(info, position, time, time + animation - 1, constraints);
+            EntryAnimeTitles(info, cursor, time, time + animation - 1, textConstraints);
             time += animation;
             animation = Snap(Beatmap, time, 4, 1);
-            EntryAnimeStudio(info, position, time, time + animation - 1, constraints);
+            EntryAnimeStudio(info, cursor, time, time + animation - 1, textConstraints);
             time += animation;
             animation = Snap(Beatmap, time, 4, 1);
-            EntryAnimeOtherInfo(info, position, time, time + animation - 1, constraints);
+            EntryAnimeOtherInfo(info, cursor, time, time + animation - 1, textConstraints);
             time += animation;
 
             // song
 
             animation = Snap(Beatmap, time, 8, 1);
-            EntrySongIcon(position, time, time + animation - 1);
-            // time += animation;
+            cursor = position;
+            cursor.X += 30;
+            EntrySongIcon(cursor, time, time + animation - 1);
+            cursor.X += 30;
+            cursor += PixelToOsu(16, 0);
 
             animation = Snap(Beatmap, time, 4, 1);
-            EntrySongTitles(info, position, time, time + animation - 1, constraints);
+            EntrySongTitles(info, cursor, time, time + animation - 1, textConstraints);
             time += animation;
             animation = Snap(Beatmap, time, 4, 1);
-            EntrySongArtists(info, position, time, time + animation - 1, constraints);
+            EntrySongArtists(info, cursor, time, time + animation - 1, textConstraints);
             time += animation;
 
             // mappers
 
             animation = Snap(Beatmap, time, 8, 1);
-            EntryMappersIcon(position, time, time + animation - 1);
-            // time += animation;
+            cursor = position;
+            cursor.X += 30;
+            EntryMappersIcon(cursor, time, time + animation - 1);
+            cursor.X += 30;
+            cursor += PixelToOsu(16, 0);
 
             animation = Snap(Beatmap, time, 8, 1);
-            EntryMappers(info, position, time, time + animation - 1, constraints);
-            time += animation;
+            EntryMappers(info, cursor, time, time + animation - 1, textConstraints);
+            // time += animation;
         }
 
-        private void EntryAnimeCover(Info info, Vector2 position, int startTime, int endTime)
+        private Box2 EntryAnimeCover(Info info, Vector2 position, int startTime, int endTime)
         {
-            const float CoverHeight = 81f;
+            const float CoverWidth = 56f;
+            const float ShadowOffset = 2f;
+            const float ScaleAdjustment = 1 - 25f / 100;
+            const float ShadowOpacity = 0.66f;
 
             var animation = Snap(Beatmap, startTime, 1, 1);
+            var moveOffset = Vector2.One * ShadowOffset;
 
             var animeCoverPath = Path.Combine("sb", LegalizeString(info.Anime.Title), "large_image.jpg");
             var pixelPath = Path.Combine("sb", "Pixel.png");
             if (!File.Exists(Path.Combine(MapsetPath, animeCoverPath))) throw new Exception($"{animeCoverPath} is missing");
             if (!File.Exists(Path.Combine(MapsetPath, pixelPath))) throw new Exception($"{pixelPath} is missing");
 
-            var seasonColor1 = GetGetSeasonColor(info, 1);
-            var seasonColor2 = GetGetSeasonColor(info, 2);
+            var coverBitmap = GetMapsetBitmap(animeCoverPath);
+            var coverScale = CoverWidth / coverBitmap.Size.Width;
+            var initialScale = coverScale * ScaleAdjustment;
+            var coverSize = new Vector2(coverBitmap.Size.Width, coverBitmap.Size.Height) * coverScale;
 
-            var coverbitmap = GetMapsetBitmap(animeCoverPath);
-            var coverScale = CoverHeight / coverbitmap.Size.Height;
-            var coverSize = new Vector2(coverbitmap.Size.Width, coverbitmap.Size.Height) * coverScale;
-            var initialSize = new Vector2(0, CoverHeight);
-
-            var cover = GetLayer("").CreateSprite(animeCoverPath);
             var coverShadow = GetLayer("").CreateSprite(pixelPath);
+            var cover = GetLayer("").CreateSprite(animeCoverPath);
 
-            coverShadow.Color(OsbEasing.InOutSine, startTime, endTime, seasonColor1, seasonColor2);
-            // intro
-            coverShadow.Move(OsbEasing.InOutSine, startTime, startTime + animation, position, position - new Vector2(coverSize.X / 2, 0));
-            coverShadow.ScaleVec(OsbEasing.InOutSine, startTime, startTime + animation, initialSize, coverSize);
-            coverShadow.Fade(startTime, 1);
-            coverShadow.Fade(startTime + animation, startTime + animation * 2, 1, 0);
+            // Intro
+            cover.Move(startTime, position);
+            cover.Scale(startTime, initialScale);
+            cover.Fade(OsbEasing.Out, startTime, startTime + animation / 2, 0, 1);
+            cover.Move(OsbEasing.OutBack, startTime, startTime + animation, position, position - moveOffset);
+            cover.Scale(OsbEasing.OutBack, startTime, startTime + animation, initialScale, coverScale);
 
-            cover.Move(startTime + animation, position - new Vector2(coverSize.X, 0) / 2);
-            cover.Scale(startTime + animation, coverScale);
-            cover.Fade(startTime + animation, 1);
+            coverShadow.Move(startTime, position);
+            coverShadow.ScaleVec(startTime, coverSize * ScaleAdjustment);
+            coverShadow.Color(startTime, Color.Black);
+            coverShadow.Fade(OsbEasing.Out, startTime, startTime + animation / 2, 0, ShadowOpacity);
+            coverShadow.ScaleVec(OsbEasing.OutBack, startTime, startTime + animation, coverSize * ScaleAdjustment, coverSize);
+            coverShadow.Move(OsbEasing.OutBack, startTime, startTime + animation, position, position + moveOffset);
 
-            // outro
-            cover.Fade(endTime - animation, endTime, 1, 0);
+            // Outro
+            cover.Fade(OsbEasing.In, endTime - animation / 2, endTime, 1, 0);
+            cover.Move(OsbEasing.InBack, endTime - animation, endTime, position - moveOffset, position);
+            cover.Scale(OsbEasing.InBack, endTime - animation, endTime, coverScale, initialScale);
 
-            // coverShadow.Fade(endTime - animation / 2, endTime, 1, 0);
-            // coverShadow.Move(OsbEasing.InOutSine, endTime - animation, endTime, position - new Vector2(coverSize.X / 2, 0), position);
-            // coverShadow.ScaleVec(OsbEasing.InOutSine, endTime - animation, endTime, coverSize, initialSize);
-            // coverShadow.Fade(endTime - animation, endTime, 1, 1);
+            coverShadow.Fade(OsbEasing.In, endTime - animation / 2, endTime, ShadowOpacity, 0);
+            coverShadow.Move(OsbEasing.InBack, endTime - animation, endTime, position + moveOffset, position);
+            coverShadow.ScaleVec(OsbEasing.InBack, endTime - animation, endTime, coverSize, coverSize * ScaleAdjustment);
+
+            // Calculate bounding box
+            var minPosition = position - coverSize / 2 - moveOffset;
+            var maxPosition = position + coverSize / 2 + moveOffset;
+            return new Box2(minPosition, maxPosition);
         }
 
-        private void EntryMappersIcon(Vector2 position, int startTime, int endTime)
+        private Box2 EntryMappersIcon(Vector2 position, int startTime, int endTime)
         {
             var profilePath = Path.Combine("sb", "Profile.png");
             if (!File.Exists(Path.Combine(MapsetPath, profilePath))) throw new Exception($"{profilePath} is missing");
 
             const float profileHeight = 57f;
+            const float ShadowOffset = 2f;
+            const float ScaleAdjustment = 1 - 25f / 100;;
+            const float ShadowOpacity = 0.66f;
 
-            var profilebitmap = GetMapsetBitmap(profilePath);
-            float profileScale = profileHeight / profilebitmap.Size.Height;
-            var profileSize = new Vector2(profilebitmap.Size.Width, profilebitmap.Size.Height) * profileScale;
+            var profileBitmap = GetMapsetBitmap(profilePath);
+            float profileScale = profileHeight / profileBitmap.Size.Height;
+            var initialScale = profileScale * ScaleAdjustment;
+            var profileSize = new Vector2(profileBitmap.Size.Width, profileBitmap.Size.Height) * profileScale;
 
+            var profileShadow = GetLayer("").CreateSprite(profilePath);
             var profile = GetLayer("").CreateSprite(profilePath);
-            profile.Scale(startTime, profileScale);
-            profile.Move(startTime, position - new Vector2(profileSize.X, 0) / 2);
-            profile.Fade(startTime, endTime, 1, 1);
+
+            profileShadow.Color(startTime, Color.Black);
+
+            // Intro animation
+            profileShadow.Move(startTime, position);
+            profileShadow.Scale(startTime, initialScale);
+            profileShadow.Fade(OsbEasing.Out, startTime, startTime + Snap(Beatmap, startTime, 1, 1) / 2, 0, ShadowOpacity);
+            profileShadow.Move(OsbEasing.OutBack, startTime, startTime + Snap(Beatmap, startTime, 1, 1), position, position + Vector2.One * ShadowOffset);
+            profileShadow.Scale(OsbEasing.OutBack, startTime, startTime + Snap(Beatmap, startTime, 1, 1), initialScale, profileScale);
+
+            profile.Move(startTime, position);
+            profile.Scale(startTime, initialScale);
+            profile.Fade(OsbEasing.Out, startTime, startTime + Snap(Beatmap, startTime, 1, 1) / 2, 0, 1);
+            profile.Move(OsbEasing.OutBack, startTime, startTime + Snap(Beatmap, startTime, 1, 1), position, position - Vector2.One * ShadowOffset);
+            profile.Scale(OsbEasing.OutBack, startTime, startTime + Snap(Beatmap, startTime, 1, 1), initialScale, profileScale);
+
+            // Outro animation
+            profileShadow.Fade(OsbEasing.In, endTime - Snap(Beatmap, startTime, 1, 1) / 2, endTime, ShadowOpacity, 0);
+            profileShadow.Move(OsbEasing.InBack, endTime - Snap(Beatmap, startTime, 1, 1), endTime, position + Vector2.One * ShadowOffset, position);
+            profileShadow.Scale(OsbEasing.InBack, endTime - Snap(Beatmap, startTime, 1, 1), endTime, profileScale, initialScale);
+
+            profile.Fade(OsbEasing.In, endTime - Snap(Beatmap, startTime, 1, 1) / 2, endTime, 1, 0);
+            profile.Move(OsbEasing.InBack, endTime - Snap(Beatmap, startTime, 1, 1), endTime, position - Vector2.One * ShadowOffset, position);
+            profile.Scale(OsbEasing.InBack, endTime - Snap(Beatmap, startTime, 1, 1), endTime, profileScale, initialScale);
+
+            return new Box2(position - profileSize / 2, position + profileSize / 2);
         }
 
-        private void EntrySongIcon(Vector2 position, int startTime, int endTime)
+        private Box2 EntrySongIcon(Vector2 position, int startTime, int endTime)
         {
             var diskPath = Path.Combine("sb", "Disk.png");
             if (!File.Exists(Path.Combine(MapsetPath, diskPath))) throw new Exception($"{diskPath} is missing");
 
             const float diskHeight = 57f;
+            const float ShadowOffset = 2f;
+            const float ScaleAdjustment = 0.10f;
+            const float ShadowOpacity = 0.66f;
 
-            var diskbitmap = GetMapsetBitmap(diskPath);
-            float diskScale = diskHeight / diskbitmap.Size.Height;
-            var diskSize = new Vector2(diskbitmap.Size.Width, diskbitmap.Size.Height) * diskScale;
+            var diskBitmap = GetMapsetBitmap(diskPath);
+            float diskScale = diskHeight / diskBitmap.Size.Height;
+            var initialScale = diskScale * (1 - ScaleAdjustment);
+            var diskSize = new Vector2(diskBitmap.Size.Width, diskBitmap.Size.Height) * diskScale;
 
+            var diskShadow = GetLayer("").CreateSprite(diskPath);
             var disk = GetLayer("").CreateSprite(diskPath);
-            disk.Scale(startTime, diskScale);
-            disk.Move(startTime, position - new Vector2(diskSize.X, 0) / 2);
-            disk.Fade(startTime, endTime, 1, 1);
-            disk.Rotate(OsbEasing.InOutBack, startTime, startTime + (endTime - startTime) / 2, MathHelper.DegreesToRadians(100), MathHelper.DegreesToRadians(97.5));
-            disk.Rotate(OsbEasing.InOutBack, startTime + (endTime - startTime) / 2, endTime, MathHelper.DegreesToRadians(97.5), MathHelper.DegreesToRadians(102.5));
+
+            diskShadow.Color(startTime, Color.Black);
+
+            // Intro animation
+            diskShadow.Move(startTime, position);
+            diskShadow.Scale(startTime, initialScale);
+            diskShadow.Fade(OsbEasing.Out, startTime, startTime + Snap(Beatmap, startTime, 1, 1) / 2, 0, ShadowOpacity);
+            diskShadow.Move(OsbEasing.OutBack, startTime, startTime + Snap(Beatmap, startTime, 1, 1), position, position + Vector2.One * ShadowOffset);
+            diskShadow.Scale(OsbEasing.OutBack, startTime, startTime + Snap(Beatmap, startTime, 1, 1), initialScale, diskScale);
+
+            disk.Move(startTime, position);
+            disk.Scale(startTime, initialScale);
+            disk.Fade(OsbEasing.Out, startTime, startTime + Snap(Beatmap, startTime, 1, 1) / 2, 0, 1);
+            disk.Move(OsbEasing.OutBack, startTime, startTime + Snap(Beatmap, startTime, 1, 1), position, position - Vector2.One * ShadowOffset);
+            disk.Scale(OsbEasing.OutBack, startTime, startTime + Snap(Beatmap, startTime, 1, 1), initialScale, diskScale);
+
+            // Outro animation
+            diskShadow.Fade(OsbEasing.In, endTime - Snap(Beatmap, startTime, 1, 1) / 2, endTime, ShadowOpacity, 0);
+            diskShadow.Move(OsbEasing.InBack, endTime - Snap(Beatmap, startTime, 1, 1), endTime, position + Vector2.One * ShadowOffset, position);
+            diskShadow.Scale(OsbEasing.InBack, endTime - Snap(Beatmap, startTime, 1, 1), endTime, diskScale, initialScale);
+
+            disk.Fade(OsbEasing.In, endTime - Snap(Beatmap, startTime, 1, 1) / 2, endTime, 1, 0);
+            disk.Move(OsbEasing.InBack, endTime - Snap(Beatmap, startTime, 1, 1), endTime, position - Vector2.One * ShadowOffset, position);
+            disk.Scale(OsbEasing.InBack, endTime - Snap(Beatmap, startTime, 1, 1), endTime, diskScale, initialScale);
+
+            return new Box2(position - diskSize / 2, position + diskSize / 2);
         }
+
 
         private void EntryAnimeTitles(Info info, Vector2 position, int startTime, int endTime, Vector2 constraints)
         {
@@ -306,12 +385,12 @@ namespace StorybrewScripts
             if (info.Anime.StartSeason.Year != 2024) Log($"{info.Anime.Title} Season: {season} Year: {info.Anime.StartSeason.Year}");
 
             var texts = new List<TextItem>();
-            
-            if(info.Anime.Mean != 0) texts.Add(new TextItem(score, Font, FontSize3));
+
+            if (info.Anime.Mean != 0) texts.Add(new TextItem(score, Font, FontSize3));
             texts.Add(new TextItem(season, Font, FontSize2));
             texts.Add(new TextItem(generes, Font, FontSize3));
             // if(info.Anime.NumEpisodes != 0) texts.Add(new TextItem(episodes, Font, FontSize4));
-            
+
             GenerateTextBox(this, texts, position, startTime, endTime, constraints, effect);
         }
 
@@ -321,11 +400,11 @@ namespace StorybrewScripts
 
             var texts = new List<TextItem>
             {
-                new TextItem(info.Song.Title, FontJa, FontSize1),
-                new TextItem(info.Song.TitleRomanised, Font, FontSize3),
+                new TextItem(info.Song.Title, FontJa, FontSize3),
+                new TextItem(info.Song.TitleRomanised, Font, FontSize1),
             };
 
-            texts = texts.GroupBy(x => x.Text).Select(x => x.First()).ToList();
+            texts = texts.GroupBy(x => x.Text).Select(x => x.Last()).ToList();
             GenerateTextBox(this, texts, position, startTime, endTime, constraints, effect);
         }
 
@@ -335,11 +414,11 @@ namespace StorybrewScripts
 
             var texts = new List<TextItem>
             {
-                new TextItem(info.Song.Artist, FontJa, FontSize2),
-                new TextItem(info.Song.ArtistRomanised, Font, FontSize3),
+                new TextItem(info.Song.Artist, FontJa, FontSize3),
+                new TextItem(info.Song.ArtistRomanised, Font, FontSize2),
             };
 
-            texts = texts.GroupBy(x => x.Text).Select(x => x.First()).ToList();
+            texts = texts.GroupBy(x => x.Text).Select(x => x.Last()).ToList();
             GenerateTextBox(this, texts, position, startTime, endTime, constraints, effect);
         }
 
@@ -384,7 +463,7 @@ namespace StorybrewScripts
             VerticalProgressBar(position + PixelToOsu(5, 5), startTime, endTime, barSize, Color4.Black, 1f / 2);
             VerticalProgressBar(position, startTime, endTime, barSize, Color4.White);
         }
-        
+
         private void Parts(Info info, Vector2 position)
         {
             if (info.Parts.Count == 0)
@@ -409,7 +488,7 @@ namespace StorybrewScripts
             }
 
             var lastPart = info.Parts.Last();
-            
+
             if (lastPart.EndTime.HasValue)
             {
                 Mapper(Font, lastPart.Name, position, lastPart.StartTime + Offset, lastPart.EndTime.Value + Offset);
@@ -421,7 +500,7 @@ namespace StorybrewScripts
                 {
                     Mapper(Font, lastPart.Name, position, lastPart.StartTime + Offset, info.Entry.EndTime + Offset);
                     Log("Parts for Entry " + info.Entry.Number + " do no have end time, using entry end time");
-                    return;        
+                    return;
                 }
 
                 Mapper(Font, lastPart.Name, position, lastPart.StartTime + Offset, (int)entryObjects.Last().EndTime);
@@ -457,7 +536,7 @@ namespace StorybrewScripts
             // resnap lyrics and calculate ends
             var lyricSnaped = lyrics;
             if (ResnapLyrics)
-            { 
+            {
                 for (int i = 0; i < lyricSnaped.Count; i++)
                 {
                     var lyric = lyricSnaped[i];
@@ -505,7 +584,7 @@ namespace StorybrewScripts
 
         private void GenerateBackground(string backgroundPath, int startTime, int endTime)
         {
-            #pragma warning disable CS0162
+#pragma warning disable CS0162
 
             const bool FadeIn = true;
             const bool FadeOut = true;
@@ -579,7 +658,7 @@ namespace StorybrewScripts
                 vignete.Fade(endTime, endTime - 1, vigneteOpacity, 0);
             }
 
-            #pragma warning restore CS0162
+#pragma warning restore CS0162
         }
 
         // other functions
